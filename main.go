@@ -1,0 +1,84 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"text/tabwriter"
+	"os"
+)
+
+func main() {
+	cardNumber := flag.String("card-number", "", "Library card number")
+	pinCode := flag.String("pin", "", "PIN code")
+	dump := flag.Bool("dump", false, "Dump the raw JSON response")
+	flag.Parse()
+
+	if *cardNumber == "" || *pinCode == "" {
+		log.Fatal("card-number and pin are required")
+	}
+
+	client, err := NewClient(*cardNumber, *pinCode)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	if *dump {
+		// This is a simplified way to get the raw response.
+		// In a real application, the `query` method in the client would be
+		// modified to optionally return the raw response body.
+		// For now, we'll just make another request.
+		// This is inefficient but fine for debugging.
+		requestBody := ProfileRequest{
+			Query: getProfileQuery,
+			Variables: ProfileVariables{
+				Operation: "getProfile",
+			},
+		}
+		var responseBody json.RawMessage
+		if err := client.query(&requestBody, &responseBody); err != nil {
+			log.Fatalf("Failed to get raw profile: %v", err)
+		}
+		var prettyJSON bytes.Buffer
+		if err := json.Indent(&prettyJSON, []byte(responseBody), "", "  "); err != nil {
+			log.Fatalf("Failed to format JSON: %v", err)
+		}
+		fmt.Println(prettyJSON.String())
+		return
+	}
+
+	profile, err := client.GetProfile()
+	if err != nil {
+		log.Fatalf("Failed to get profile: %v", err)
+	}
+
+	fmt.Printf("Welcome, %s!\n", profile.PatronName)
+
+	fmt.Println("\nLoans:")
+	if len(profile.Loans.PhysicalLoans) == 0 {
+		fmt.Println("  No loans.")
+	} else {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "Title\tAuthor\tDue Date\tLibrary")
+		fmt.Fprintln(w, "-----\t------\t--------\t-------")
+		for _, loan := range profile.Loans.PhysicalLoans {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", loan.Media.Title, loan.Media.Author, loan.LoanDueDate, loan.Branch.Name)
+		}
+		w.Flush()
+	}
+
+	fmt.Println("\nReservations:")
+	if len(profile.Reservations) == 0 {
+		fmt.Println("  No reservations.")
+	} else {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "Title\tAuthor\tQueue #\tPickup At")
+		fmt.Fprintln(w, "-----\t------\t-------	---------")
+		for _, res := range profile.Reservations {
+			fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", res.Media.Title, res.Media.Author, res.QueueNumber, res.Branch.Name)
+		}
+		w.Flush()
+	}
+}
