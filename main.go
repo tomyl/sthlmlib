@@ -6,14 +6,15 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"text/tabwriter"
 	"os"
+	"text/tabwriter"
 )
 
 func main() {
 	cardNumber := flag.String("card-number", "", "Library card number")
 	pinCode := flag.String("pin", "", "PIN code")
 	dump := flag.Bool("dump", false, "Dump the raw JSON response")
+	ical := flag.Bool("ical", false, "Output loans as an iCal file to stdout")
 	flag.Parse()
 
 	if *cardNumber == "" || *pinCode == "" {
@@ -26,26 +27,7 @@ func main() {
 	}
 
 	if *dump {
-		// This is a simplified way to get the raw response.
-		// In a real application, the `query` method in the client would be
-		// modified to optionally return the raw response body.
-		// For now, we'll just make another request.
-		// This is inefficient but fine for debugging.
-		requestBody := ProfileRequest{
-			Query: getProfileQuery,
-			Variables: ProfileVariables{
-				Operation: "getProfile",
-			},
-		}
-		var responseBody json.RawMessage
-		if err := client.query(&requestBody, &responseBody); err != nil {
-			log.Fatalf("Failed to get raw profile: %v", err)
-		}
-		var prettyJSON bytes.Buffer
-		if err := json.Indent(&prettyJSON, []byte(responseBody), "", "  "); err != nil {
-			log.Fatalf("Failed to format JSON: %v", err)
-		}
-		fmt.Println(prettyJSON.String())
+		dumpProfile(client)
 		return
 	}
 
@@ -54,6 +36,37 @@ func main() {
 		log.Fatalf("Failed to get profile: %v", err)
 	}
 
+	if *ical {
+		icalData, err := GenerateICal(profile)
+		if err != nil {
+			log.Fatalf("Failed to generate iCal data: %v", err)
+		}
+		fmt.Print(icalData)
+		return
+	}
+
+	printProfile(profile)
+}
+
+func dumpProfile(client *Client) {
+	requestBody := ProfileRequest{
+		Query: getProfileQuery,
+		Variables: ProfileVariables{
+			Operation: "getProfile",
+		},
+	}
+	var responseBody json.RawMessage
+	if err := client.query(&requestBody, &responseBody); err != nil {
+		log.Fatalf("Failed to get raw profile: %v", err)
+	}
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, []byte(responseBody), "", "  "); err != nil {
+		log.Fatalf("Failed to format JSON: %v", err)
+	}
+	fmt.Println(prettyJSON.String())
+}
+
+func printProfile(profile *Patron) {
 	fmt.Printf("Welcome, %s!\n", profile.PatronName)
 
 	fmt.Println("\nLoans:")
@@ -75,7 +88,7 @@ func main() {
 	} else {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintln(w, "Title\tAuthor\tQueue #\tPickup At")
-		fmt.Fprintln(w, "-----\t------\t-------	---------")
+		fmt.Fprintln(w, "-----\t------\t-------\t---------")
 		for _, res := range profile.Reservations {
 			fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", res.Media.Title, res.Media.Author, res.QueueNumber, res.Branch.Name)
 		}
