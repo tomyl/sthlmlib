@@ -15,6 +15,7 @@ func main() {
 	pinCode := flag.String("pin", "", "PIN code")
 	dump := flag.Bool("dump", false, "Dump the raw JSON response")
 	ical := flag.Bool("ical", false, "Output loans as an iCal file to stdout")
+	group := flag.Bool("group", false, "Group ical entries for the same day")
 	flag.Parse()
 
 	if *cardNumber == "" || *pinCode == "" {
@@ -37,7 +38,7 @@ func main() {
 	}
 
 	if *ical {
-		icalData, err := GenerateICal(profile)
+		icalData, err := GenerateICal(profile, *group)
 		if err != nil {
 			log.Fatalf("Failed to generate iCal data: %v", err)
 		}
