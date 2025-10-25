@@ -91,10 +91,11 @@ type Loan struct {
 	LoanID            string `json:"loanId"`
 	LoanDate          string `json:"loanDate"`
 	LoanDueDate       string `json:"loanDueDate"`
-	LoanDateDiff      int    `json:"loanDateDiff"`
+	LoanDateDiff      string `json:"loanDateDiff"`
 	RemainingRenewals int    `json:"remainingRenewals"`
 	LoanPerProduct    bool   `json:"loanPerProduct"`
 	IsRenewable       bool   `json:"isRenewable"`
+	NonRenewableMessage string `json:"nonRenewableMessage"`
 	Status            string `json:"status"`
 	Branch            struct {
 		Name string `json:"name"`

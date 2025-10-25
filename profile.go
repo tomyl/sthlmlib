@@ -3,94 +3,35 @@ package main
 import "fmt"
 
 const getProfileQuery = `
-  fragment debt on Debt {
-    id
-    type
-    refNo
-    titles {
-      display
-      dueDate
-      someNumber
-    }
-    amount
-    amountInSubunits
-    date
-    dueDate
-    typeDisplay
-  }
-
-  fragment loan on Loan {
-    loanId
-    loanDate
-    loanDueDate
-    loanDateDiff
-    remainingRenewals
-    loanPerProduct
-    isRenewable
-    status
-    branch {
-      name
-    }
-    media {
-      key
-      title
-      author
-      image
-      mediaTypeDisplay
-      mediaSubTypeDisplay
-    }
-  }
-
-  fragment reservation on Reservation {
-    catalogueRecordId
-    fee
-    reservationStatus
-    created
-    validFrom
-    validTo
-    queueNumber
-    nofCopies
-    status
-    pickUpNumber
-    pickupExpire
-    media {
-      title
-      author
-      image
-    }
-    branch {
-      name
-      slug
-    }
-  }
-
-  query getProfile {
+query {
     patron {
       ... on Patron {
         patronName
-        patronId
-        note
         cardNumbers
-        debts {
-          ...debt
-        }
         loans {
           physicalLoans {
+            loanId
             catalogueRecordId
-            ...loan
+            loanDate
+            loanDueDate
+            loanDateDiff
+            remainingRenewals
+            loanPerProduct
+            isRenewable
+            nonRenewableMessage
+            status
+            branch {
+              name
+            }
+            media {
+              key
+              title
+              author
+              image
+              mediaTypeDisplay
+              mediaSubTypeDisplay
+            }
           }
-        }
-        reservations {
-          ...reservation
-        }
-        emails {
-          id
-          email
-        }
-        phoneNumbers {
-          id
-          number
-          sms
         }
       }
       ... on Response {
@@ -106,7 +47,7 @@ func (c *Client) GetProfile() (*Patron, error) {
 	requestBody := ProfileRequest{
 		Query: getProfileQuery,
 		Variables: ProfileVariables{
-			Operation: "getProfile",
+			Operation: "loans",
 		},
 	}
 
