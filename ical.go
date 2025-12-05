@@ -13,7 +13,7 @@ func GenerateICal(patron *Patron, group bool) (string, error) {
 	cal.SetMethod(ics.MethodPublish)
 	cal.SetCalscale("GREGORIAN")
 	cal.SetName("Library Loans")
-	cal.SetDescription("Due dates for library loans")
+	cal.SetDescription("Due dates for library loans and reservations")
 
 	if group {
 		loansByDate := make(map[string][]PhysicalLoan)
@@ -61,6 +61,28 @@ func GenerateICal(patron *Patron, group bool) (string, error) {
 		}
 	}
 
+	for _, res := range patron.Reservations {
+		if res.PickupExpire != nil {
+			event := cal.AddEvent(res.ID)
+			event.SetCreatedTime(time.Now())
+			event.SetDtStampTime(time.Now())
+			event.SetModifiedAt(time.Now())
+			summary := "Pickup: " + res.Media.Title
+			if res.PickUpNumber != nil {
+				summary += fmt.Sprintf(" (#%s)", *res.PickUpNumber)
+			}
+			event.SetSummary(summary)
+			event.SetDescription(fmt.Sprintf("Author: %s\nLibrary: %s", res.Media.Author, res.Branch.Name))
+
+			expireDate, err := time.Parse("2006-01-02", *res.PickupExpire)
+			if err != nil {
+				// Log the error and skip this event
+				fmt.Printf("Skipping reservation due to invalid date format: %v\n", err)
+				continue
+			}
+			event.SetProperty(ics.ComponentPropertyDtStart, expireDate.Format("20060102"), ics.WithValue("DATE"))
+		}
+	}
+
 	return cal.Serialize(), nil
 }
-

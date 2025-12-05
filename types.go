@@ -54,6 +54,8 @@ type Patron struct {
 	Reservations []Reservation `json:"reservations"`
 	Emails       []Email       `json:"emails"`
 	PhoneNumbers []PhoneNumber `json:"phoneNumbers"`
+	AbsentFrom   *string       `json:"absentFrom"`
+	AbsentTo     *string       `json:"absentTo"`
 }
 
 // Debt represents a fee or charge.
@@ -88,50 +90,55 @@ type PhysicalLoan struct {
 
 // Loan represents a single loan.
 type Loan struct {
-	LoanID            string `json:"loanId"`
-	LoanDate          string `json:"loanDate"`
-	LoanDueDate       string `json:"loanDueDate"`
-	LoanDateDiff      string `json:"loanDateDiff"`
-	RemainingRenewals int    `json:"remainingRenewals"`
-	LoanPerProduct    bool   `json:"loanPerProduct"`
-	IsRenewable       bool   `json:"isRenewable"`
-	NonRenewableMessage string `json:"nonRenewableMessage"`
-	Status            string `json:"status"`
-	Branch            struct {
-		Name string `json:"name"`
-	} `json:"branch"`
-	Media struct {
-		Key                 string `json:"key"`
-		Title               string `json:"title"`
-		Author              string `json:"author"`
-		Image               string `json:"image"`
-		MediaTypeDisplay    string `json:"mediaTypeDisplay"`
-		MediaSubTypeDisplay string `json:"mediaSubTypeDisplay"`
-	} `json:"media"`
+	LoanID            string  `json:"loanId"`
+	LoanDate          string  `json:"loanDate"`
+	LoanDueDate       string  `json:"loanDueDate"`
+	LoanDateDiff      string  `json:"loanDateDiff"`
+	RemainingRenewals int     `json:"remainingRenewals"`
+	LoanPerProduct    bool    `json:"loanPerProduct"`
+	IsRenewable       bool    `json:"isRenewable"`
+	NonRenewableMessage string  `json:"nonRenewableMessage"`
+	Status            string  `json:"status"`
+	Branch            Branch  `json:"branch"`
+	Media             Media   `json:"media"`
 }
 
 // Reservation represents a single reservation.
 type Reservation struct {
+	ID                string      `json:"id"`
+	Branch            Branch      `json:"branch"`
 	CatalogueRecordID string      `json:"catalogueRecordId"`
-	Fee               int         `json:"fee"`
-	ReservationStatus string      `json:"reservationStatus"`
 	Created           string      `json:"created"`
+	Editable          bool        `json:"editable"`
+	PickupExpire      *string     `json:"pickupExpire"`
+	PickUpNumber      *string     `json:"pickUpNumber"`
+	NofCopies         int         `json:"nofCopies"`
+	QueueNumber       int         `json:"queueNumber"`
+	ReservationStatus string      `json:"reservationStatus"`
+	Status            interface{} `json:"status"`
 	ValidFrom         string      `json:"validFrom"`
 	ValidTo           string      `json:"validTo"`
-	QueueNumber       int         `json:"queueNumber"`
-	NofCopies         int         `json:"nofCopies"`
-	Status            interface{} `json:"status"`
-	PickUpNumber      interface{} `json:"pickUpNumber"`
-	PickupExpire      interface{} `json:"pickupExpire"`
-	Media             struct {
-		Title  string `json:"title"`
-		Author string `json:"author"`
-		Image  string `json:"image"`
-	} `json:"media"`
-	Branch struct {
-		Name string `json:"name"`
-		Slug string `json:"slug"`
-	} `json:"branch"`
+	Media             Media       `json:"media"`
+	Note              interface{} `json:"note"`
+}
+
+// Branch represents a library branch.
+type Branch struct {
+	Name string `json:"name"`
+	Slug string `json:"slug,omitempty"`
+}
+
+// Media represents a media item.
+type Media struct {
+	Key                 string `json:"key"`
+	Title               string `json:"title"`
+	Author              string `json:"author"`
+	Image               string `json:"image"`
+	MediaTypeDisplay    string `json:"mediaTypeDisplay"`
+	MediaSubTypeDisplay string `json:"mediaSubTypeDisplay"`
+	Language            string `json:"language,omitempty"`
+	TargetGroup         string `json:"targetGroup,omitempty"`
+	PublishedDate       string `json:"publishedDate,omitempty"`
 }
 
 // Email represents a user's email address.
