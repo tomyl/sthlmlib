@@ -88,8 +88,8 @@ func printProfile(profile *Patron) {
 		fmt.Println("  No reservations.")
 	} else {
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "Title\tAuthor\tStatus\tExpires\tPickup Number")
-		fmt.Fprintln(w, "-----\t------\t------\t-------\t-------------")
+		fmt.Fprintln(w, "Title\tAuthor\tStatus\tExpires\tPickup Number\tLibrary")
+		fmt.Fprintln(w, "-----\t------\t------\t-------\t-------------\t-------")
 		for _, res := range profile.Reservations {
 			pickupExpire := ""
 			if res.PickupExpire != nil {
@@ -99,7 +99,7 @@ func printProfile(profile *Patron) {
 			if res.PickUpNumber != nil {
 				pickupNumber = *res.PickUpNumber
 			}
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", res.Media.Title, res.Media.Author, res.ReservationStatus, pickupExpire, pickupNumber)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", res.Media.Title, res.Media.Author, res.ReservationStatus, pickupExpire, pickupNumber, res.Branch.Name)
 		}
 		w.Flush()
 	}
