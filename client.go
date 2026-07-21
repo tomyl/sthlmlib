@@ -8,9 +8,7 @@ import (
 	"net/http/cookiejar"
 )
 
-const (
-	apiEndpoint = "https://biblioteket.stockholm.se/graphql/"
-)
+var apiEndpoint = "https://biblioteket.stockholm.se/graphql"
 
 // Client is a client for the Stockholm Public Library API.
 type Client struct {
@@ -18,7 +16,7 @@ type Client struct {
 }
 
 // NewClient creates a new authenticated client.
-func NewClient(cardNumber, pinCode string) (*Client, error) {
+func NewClient(cardNumber, password string) (*Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create cookie jar: %w", err)
@@ -30,14 +28,14 @@ func NewClient(cardNumber, pinCode string) (*Client, error) {
 		},
 	}
 
-	if err := client.login(cardNumber, pinCode); err != nil {
+	if err := client.login(cardNumber, password); err != nil {
 		return nil, fmt.Errorf("login failed: %w", err)
 	}
 
 	return client, nil
 }
 
-func (c *Client) login(cardNumber, pinCode string) error {
+func (c *Client) login(cardNumber, password string) error {
 	requestBody := LoginRequest{
 		Query: `
   mutation loginPatron($loginInput: InputLogin!) {
@@ -51,7 +49,7 @@ func (c *Client) login(cardNumber, pinCode string) error {
 			Operation: "loginPatron",
 			LoginInput: LoginInput{
 				CardNumber: cardNumber,
-				PinCode:    pinCode,
+				Password:   password,
 			},
 		},
 	}

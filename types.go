@@ -13,7 +13,7 @@ type Variables struct {
 
 type LoginInput struct {
 	CardNumber string `json:"cardNumber"`
-	PinCode    string `json:"pinCode"`
+	Password   string `json:"pinCode"`
 }
 
 // LoginResponse is the response from the login mutation.

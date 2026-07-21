@@ -9,5 +9,5 @@ libraries.
 
 ```bash
 go install github.com/tomyl/sthlmlib@latest
-sthlmlib -card-number <social security number or card number> -pin <pid> -ical -group
+sthlmlib -card-number <social security number or card number> -password <password> -ical -group
 ```

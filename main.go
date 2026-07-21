@@ -12,17 +12,18 @@ import (
 
 func main() {
 	cardNumber := flag.String("card-number", "", "Library card number")
-	pinCode := flag.String("pin", "", "PIN code")
+	password := flag.String("password", "", "Library account password")
+	flag.StringVar(password, "pin", "", "Library account password (deprecated alias)")
 	dump := flag.Bool("dump", false, "Dump the raw JSON response")
 	ical := flag.Bool("ical", false, "Output loans as an iCal file to stdout")
 	group := flag.Bool("group", false, "Group ical entries for the same day")
 	flag.Parse()
 
-	if *cardNumber == "" || *pinCode == "" {
-		log.Fatal("card-number and pin are required")
+	if *cardNumber == "" || *password == "" {
+		log.Fatal("card-number and password are required")
 	}
 
-	client, err := NewClient(*cardNumber, *pinCode)
+	client, err := NewClient(*cardNumber, *password)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
